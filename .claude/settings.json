@@ -2,7 +2,14 @@
   "permissions": {
     "allow": [
       "Bash(node -e ' *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(git commit *)",
+      "Bash(grep -i '\\\\.env$\\\\|node_modules')",
+      "Bash(node -e \"console.log\\(1\\)\")",
+      "Bash(sips -s format png favicon.svg --out favicon-test.png)",
+      "Bash(sips -s format png -z 32 32 favicon.svg --out favicon-32.png)",
+      "Bash(sips -s format png -z 180 180 favicon.svg --out apple-touch-icon.png)",
+      "Bash(sips -s format png -z 192 192 favicon.svg --out favicon-192.png)"
     ]
   }
 }
