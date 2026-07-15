@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Generate clean, consistent end-of-day store reports in seconds." />
+<title>End of Day Report</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="/">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 4h11l3 3v13H5V4z" stroke="#0a0a0b" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M8 10h7M8 13h7M8 16h4" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">EOD Report</span>
+  </a>
+  <nav>
+    <a href="/">Generate</a>
+    <a href="/history.html">
+      History
+      <span class="history-badge" id="historyBadge">0</span>
+    </a>
+    <a href="/about.html">About</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pulse"></span>Store Ops Tool</div>
+    <h1>End of Day Report</h1>
+    <p class="sub">Type a quick update for each part. Leave anything blank if there is nothing to say.</p>
+    <div class="length-toggle">
+      <button id="lengthShortBtn" type="button">Short</button>
+      <button id="lengthLongBtn" type="button">Long</button>
+    </div>
+  </div>
+
+  <div id="error"><span>⚠</span><span id="errorText"></span></div>
+
+  <div class="card form-card">
+    <div class="field">
+      <label>Store Name</label>
+      <div class="select-wrap">
+        <select id="store">
+          <option value="" disabled selected>Select a store</option>
+          <option value="FM265 PUYALLUP">FM265 PUYALLUP</option>
+          <option value="FM041 BONNEY LAKE">FM041 BONNEY LAKE</option>
+          <option value="FM186 LACEY">FM186 LACEY</option>
+          <option value="FM603 SHELTON">FM603 SHELTON</option>
+          <option value="FM604 SPANAWAY">FM604 SPANAWAY</option>
+          <option value="FM615 UNIVERSITY PLACE">FM615 UNIVERSITY PLACE</option>
+          <option value="FM691 GIG HARBOR">FM691 GIG HARBOR</option>
+          <option value="FM665 SUMNER">FM665 SUMNER</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Issues <span class="hint">optional</span></label>
+      <textarea id="issues" placeholder="e.g. busy today, low on mango"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Equipment / Facilities <span class="hint">optional</span></label>
+      <textarea id="equipment" placeholder="e.g. honeydew scratches"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Store Conditions <span class="hint">optional</span></label>
+      <textarea id="conditions" placeholder="e.g. clean, fully stocked"></textarea>
+    </div>
+
+    <div class="field">
+      <label>Clock-out Time <span class="hint">optional</span></label>
+      <input type="text" id="clockOut" placeholder="e.g. 5:15pm, no break" />
+    </div>
+
+    <div class="field">
+      <label>Note <span class="hint">optional</span></label>
+      <textarea id="note" placeholder="anything else to add"></textarea>
+    </div>
+
+    <button id="generateBtn">
+      <span class="spinner" id="spinner"></span>
+      <span id="generateBtnText">Generate Report</span>
+    </button>
+  </div>
+
+  <div class="card" id="resultCard">
+    <div class="result-head">
+      <div class="title"><span class="dot"></span>Report</div>
+    </div>
+    <div class="report-text" id="resultText"></div>
+    <div class="actions">
+      <button id="regenerateBtn" class="btn-regenerate">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4v5h5M20 20v-5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.5 15a7.5 7.5 0 0 0 12.9 3.2M18.5 9A7.5 7.5 0 0 0 5.6 5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Regenerate
+      </button>
+      <button id="copyBtn" class="btn-copy">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M4 16V5a1 1 0 0 1 1-1h10" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Copy
+      </button>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="f-brand"><strong>EOD Report</strong> · internal store ops tool</div>
+    <div class="f-links">
+      <a href="/history.html">History</a>
+      <a href="/about.html">About</a>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="title"><span class="dot"></span>Report Ready</div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="report-text" id="modalResultText"></div>
+    <div class="actions">
+      <button id="modalRegenerateBtn" class="btn-regenerate">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M4 4v5h5M20 20v-5h-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.5 15a7.5 7.5 0 0 0 12.9 3.2M18.5 9A7.5 7.5 0 0 0 5.6 5.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Regenerate
+      </button>
+      <button id="modalCopyBtn" class="btn-copy">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M4 16V5a1 1 0 0 1 1-1h10" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Copy
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.site-header nav a').forEach(a => {
+  if (a.getAttribute('href') === '/') a.classList.add('active');
+});
+</script>
+<script src="app.js"></script>
+</body>
+</html>

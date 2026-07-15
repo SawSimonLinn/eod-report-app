@@ -1,0 +1,15 @@
+{
+  "name": "eod-report-app",
+  "version": "1.0.0",
+  "description": "End of day store report generator using OpenAI API",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

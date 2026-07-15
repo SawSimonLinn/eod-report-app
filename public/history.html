@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="description" content="Recent end-of-day reports generated on this device." />
+<title>History · End of Day Report</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<header class="site-header">
+  <a class="brand" href="/">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M5 4h11l3 3v13H5V4z" stroke="#0a0a0b" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M8 10h7M8 13h7M8 16h4" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">EOD Report</span>
+  </a>
+  <nav>
+    <a href="/">Generate</a>
+    <a href="/history.html" class="active">
+      History
+      <span class="history-badge" id="historyBadge">0</span>
+    </a>
+    <a href="/about.html">About</a>
+  </nav>
+</header>
+
+<main class="wrap">
+  <div class="hero">
+    <div class="eyebrow"><span class="pulse"></span>This Device Only</div>
+    <h1>Recent Reports</h1>
+    <p class="sub">Reports you've generated are saved in this browser so you can find and copy them again. Nothing is sent anywhere else.</p>
+  </div>
+
+  <div id="error"><span>⚠</span><span id="errorText"></span></div>
+
+  <div class="history-head">
+    <div class="title"><span class="dot"></span>All Reports <span class="count" id="historyCount"></span></div>
+    <button id="clearHistoryBtn">Clear all</button>
+  </div>
+  <div id="historyEmpty" style="display:none;">No reports yet. <a href="/" style="color:var(--silver-1);">Generate one</a> and it'll show up here.</div>
+  <div class="history-list" id="historyList"></div>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="f-brand"><strong>EOD Report</strong> · internal store ops tool</div>
+    <div class="f-links">
+      <a href="/">Generate</a>
+      <a href="/about.html">About</a>
+    </div>
+  </div>
+</footer>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-card">
+    <div class="modal-head">
+      <div class="title"><span class="dot"></span><span id="modalStoreTitle">Report</span></div>
+      <button class="modal-close" id="modalCloseBtn" aria-label="Close">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+    <div class="report-text" id="modalResultText"></div>
+    <div class="actions">
+      <button id="modalDeleteBtn" class="btn-danger">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Delete
+      </button>
+      <button id="modalCopyBtn" class="btn-copy">
+        <svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M4 16V5a1 1 0 0 1 1-1h10" stroke="currentColor" stroke-width="1.8"/>
+        </svg>
+        Copy
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay confirm-overlay" id="confirmOverlay">
+  <div class="modal-card confirm-card">
+    <div class="modal-head">
+      <div class="title"><span class="dot" style="background:#e39a9a; box-shadow:0 0 0 4px rgba(220,90,90,0.18);"></span>Delete report?</div>
+    </div>
+    <p id="confirmMessage" class="confirm-message">This can't be undone.</p>
+    <div class="actions">
+      <button id="confirmCancelBtn" class="btn-regenerate">Cancel</button>
+      <button id="confirmOkBtn" class="btn-danger">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const HISTORY_KEY = 'eodReportHistory';
+
+const historyList = document.getElementById('historyList');
+const historyEmpty = document.getElementById('historyEmpty');
+const historyCount = document.getElementById('historyCount');
+const historyBadge = document.getElementById('historyBadge');
+const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+const errorBox = document.getElementById('error');
+const errorText = document.getElementById('errorText');
+
+const modalOverlay = document.getElementById('modalOverlay');
+const modalCloseBtn = document.getElementById('modalCloseBtn');
+const modalResultText = document.getElementById('modalResultText');
+const modalStoreTitle = document.getElementById('modalStoreTitle');
+const modalCopyBtn = document.getElementById('modalCopyBtn');
+const modalDeleteBtn = document.getElementById('modalDeleteBtn');
+
+const confirmOverlay = document.getElementById('confirmOverlay');
+const confirmMessage = document.getElementById('confirmMessage');
+const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+const confirmOkBtn = document.getElementById('confirmOkBtn');
+
+let activeId = null;
+let pendingConfirmAction = null;
+
+function askConfirm(message, onConfirm) {
+  confirmMessage.textContent = message;
+  pendingConfirmAction = onConfirm;
+  confirmOverlay.classList.add('show');
+}
+function closeConfirm() {
+  confirmOverlay.classList.remove('show');
+  pendingConfirmAction = null;
+}
+confirmCancelBtn.addEventListener('click', closeConfirm);
+confirmOkBtn.addEventListener('click', () => {
+  const action = pendingConfirmAction;
+  closeConfirm();
+  if (action) action();
+});
+confirmOverlay.addEventListener('click', (e) => { if (e.target === confirmOverlay) closeConfirm(); });
+
+function showError(msg) {
+  errorText.textContent = msg;
+  errorBox.style.display = 'flex';
+}
+
+function loadHistory() {
+  try {
+    return JSON.parse(localStorage.getItem(HISTORY_KEY)) || [];
+  } catch (err) {
+    return [];
+  }
+}
+function saveHistory(items) {
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(items));
+}
+
+function formatWhen(ts) {
+  const d = new Date(ts);
+  const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
+  const date = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  return `${date} · ${time}`;
+}
+
+function escapeHtml(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function copyIconHtml() {
+  return '<svg class="icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">' +
+    '<rect x="8" y="8" width="12" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>' +
+    '<path d="M4 16V5a1 1 0 0 1 1-1h10" stroke="currentColor" stroke-width="1.8"/></svg>';
+}
+
+function openModal(item) {
+  activeId = item.id;
+  modalStoreTitle.textContent = item.payload.store || 'Report';
+  modalResultText.textContent = item.report;
+  modalCopyBtn.classList.remove('copied');
+  modalCopyBtn.innerHTML = copyIconHtml() + 'Copy';
+  modalOverlay.classList.add('show');
+}
+function closeModal() {
+  modalOverlay.classList.remove('show');
+  activeId = null;
+}
+
+function updateBadges(count) {
+  if (count > 0) {
+    historyBadge.textContent = count;
+    historyBadge.classList.add('show');
+  } else {
+    historyBadge.classList.remove('show');
+  }
+}
+
+function render() {
+  const items = loadHistory();
+  historyList.innerHTML = '';
+
+  if (items.length === 0) {
+    historyEmpty.style.display = 'block';
+    historyCount.textContent = '';
+    updateBadges(0);
+    return;
+  }
+
+  historyEmpty.style.display = 'none';
+  historyCount.textContent = `(${items.length})`;
+  updateBadges(items.length);
+
+  items.forEach((item, i) => {
+    const el = document.createElement('div');
+    el.className = 'history-item';
+    el.style.animationDelay = `${Math.min(i, 10) * 0.025}s`;
+    el.innerHTML = `
+      <div class="h-info">
+        <div class="h-top">
+          <span class="h-store">${escapeHtml(item.payload.store || 'No store selected')}</span>
+          <span class="h-length">${item.length === 'long' ? 'Long' : 'Short'}</span>
+          <span class="h-time">${formatWhen(item.timestamp)}</span>
+        </div>
+        <div class="h-preview">${escapeHtml(item.report.replace(/\s+/g, ' '))}</div>
+      </div>
+      <div class="h-actions">
+        <button class="h-copy" title="Copy this report">${copyIconHtml()}</button>
+        <button class="h-delete" title="Delete this report">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 7h14M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2m2 0-1 13a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1L6 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+    `;
+    el.addEventListener('click', (e) => {
+      if (e.target.closest('.h-copy') || e.target.closest('.h-delete')) return;
+      openModal(item);
+    });
+    el.querySelector('.h-copy').addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const btn = e.currentTarget;
+      try {
+        await navigator.clipboard.writeText(item.report);
+        btn.classList.add('copied');
+        btn.innerHTML = '✓';
+        setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = copyIconHtml(); }, 1200);
+      } catch (err) {
+        showError('Could not copy. Please select the text manually.');
+      }
+    });
+    el.querySelector('.h-delete').addEventListener('click', (e) => {
+      e.stopPropagation();
+      askConfirm('Delete this report? This can\'t be undone.', () => deleteItem(item.id));
+    });
+    historyList.appendChild(el);
+  });
+}
+
+function deleteItem(id) {
+  const items = loadHistory().filter(i => i.id !== id);
+  saveHistory(items);
+  render();
+}
+
+clearHistoryBtn.addEventListener('click', () => {
+  if (loadHistory().length === 0) return;
+  askConfirm('Clear all saved reports on this device? This can\'t be undone.', () => {
+    saveHistory([]);
+    render();
+  });
+});
+
+modalCopyBtn.addEventListener('click', async () => {
+  try {
+    await navigator.clipboard.writeText(modalResultText.textContent);
+    modalCopyBtn.innerHTML = copyIconHtml() + 'Copied!';
+    modalCopyBtn.classList.add('copied');
+    setTimeout(() => {
+      modalCopyBtn.innerHTML = copyIconHtml() + 'Copy';
+      modalCopyBtn.classList.remove('copied');
+    }, 1500);
+  } catch (err) {
+    showError('Could not copy. Please select the text manually.');
+  }
+});
+
+modalDeleteBtn.addEventListener('click', () => {
+  if (!activeId) return;
+  const idToDelete = activeId;
+  askConfirm('Delete this report? This can\'t be undone.', () => {
+    deleteItem(idToDelete);
+    closeModal();
+  });
+});
+
+modalCloseBtn.addEventListener('click', closeModal);
+modalOverlay.addEventListener('click', (e) => { if (e.target === modalOverlay) closeModal(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Escape') return;
+  if (confirmOverlay.classList.contains('show')) { closeConfirm(); return; }
+  if (modalOverlay.classList.contains('show')) closeModal();
+});
+
+render();
+</script>
+</body>
+</html>
