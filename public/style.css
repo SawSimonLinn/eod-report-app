@@ -30,7 +30,11 @@
   --shadow-modal: 0 30px 80px rgba(0,0,0,0.6);
   --shadow-avatar: 0 8px 20px rgba(0,0,0,0.45);
   --ambient-opacity: 1;
-  --ink-on-silver: #0a0a0b;
+  --ink-on-silver: #ffffff;
+  --chrome-1: #2a2a30;
+  --chrome-2: #1a1a1e;
+  --chrome-3: #101114;
+  --spinner-track: rgba(255,255,255,0.3);
 }
 :root[data-theme="light"] {
   --bg-1: #f6f6f8;
@@ -60,6 +64,11 @@
   --shadow-modal: 0 24px 60px rgba(20,20,30,0.22);
   --shadow-avatar: 0 6px 16px rgba(20,20,30,0.16);
   --ambient-opacity: 0.35;
+  --ink-on-silver: #0a0a0b;
+  --chrome-1: #ffffff;
+  --chrome-2: #f0f0f2;
+  --chrome-3: #e2e2e6;
+  --spinner-track: rgba(10,10,11,0.3);
 }
 html { scroll-behavior: smooth; }
 html, body {
@@ -122,9 +131,10 @@ body::before {
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: linear-gradient(135deg, var(--silver-1), var(--silver-3));
+  background: linear-gradient(135deg, var(--chrome-1), var(--chrome-3));
   box-shadow: var(--shadow-mark);
   flex-shrink: 0;
+  color: var(--ink-on-silver);
 }
 .site-header .mark svg { width: 100%; height: 100%; padding: 6px; box-sizing: border-box; }
 .site-header .brand-name {
@@ -161,7 +171,7 @@ body::before {
   height: 16px;
   padding: 0 4px;
   border-radius: 999px;
-  background: var(--silver-1);
+  background: var(--chrome-1);
   color: var(--ink-on-silver);
   font-size: 10px;
   font-weight: 800;
@@ -277,7 +287,7 @@ p.sub {
   transition: background 0.18s ease, color 0.18s ease;
 }
 .length-toggle button.active {
-  background: linear-gradient(135deg, var(--silver-1), var(--silver-2));
+  background: linear-gradient(135deg, var(--chrome-1), var(--chrome-2));
   color: var(--ink-on-silver);
 }
 .length-toggle button:not(.active):hover { color: var(--silver-1); }
@@ -357,7 +367,7 @@ button#generateBtn {
   width: 100%;
   margin-top: 22px;
   padding: 14px;
-  background: linear-gradient(135deg, var(--silver-1), var(--silver-2));
+  background: linear-gradient(135deg, var(--chrome-1), var(--chrome-2));
   color: var(--ink-on-silver);
   border: none;
   border-radius: 12px;
@@ -380,7 +390,7 @@ button#generateBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: non
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  border: 2px solid rgba(10,10,11,0.35);
+  border: 2px solid var(--spinner-track);
   border-top-color: var(--ink-on-silver);
   animation: spin 0.7s linear infinite;
   display: none;
@@ -453,7 +463,7 @@ button#generateBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: non
   color: var(--silver-1);
 }
 .btn-copy:hover { background: rgba(var(--tint),0.16); }
-.btn-copy.copied { background: var(--silver-1); color: var(--ink-on-silver); }
+.btn-copy.copied { background: var(--chrome-1); color: var(--ink-on-silver); }
 
 .btn-regenerate {
   background: rgba(var(--tint),0.05);
@@ -594,7 +604,7 @@ button#generateBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: non
   transition: background 0.15s ease, color 0.15s ease;
 }
 .history-item .h-copy:hover { background: rgba(var(--tint),0.14); color: var(--silver-1); }
-.history-item .h-copy.copied { background: var(--silver-1); color: var(--ink-on-silver); }
+.history-item .h-copy.copied { background: var(--chrome-1); color: var(--ink-on-silver); }
 .history-item .h-delete:hover { background: var(--danger-bg-hover); color: var(--danger-ink); }
 
 /* Footer */
@@ -727,7 +737,7 @@ button#generateBtn:disabled { opacity: 0.55; cursor: not-allowed; transform: non
   width: 60px;
   height: 60px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--silver-1), var(--silver-3));
+  background: linear-gradient(135deg, var(--chrome-1), var(--chrome-3));
   display: flex;
   align-items: center;
   justify-content: center;

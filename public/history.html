@@ -8,6 +8,11 @@
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#0a0a0b" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="EOD Report" />
 <link rel="stylesheet" href="style.css" />
 <script>
 document.documentElement.setAttribute('data-theme', localStorage.getItem('eodTheme') || 'dark');
@@ -19,8 +24,8 @@ document.documentElement.setAttribute('data-theme', localStorage.getItem('eodThe
   <a class="brand" href="/">
     <div class="mark">
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M5 4h11l3 3v13H5V4z" stroke="#0a0a0b" stroke-width="1.8" stroke-linejoin="round"/>
-        <path d="M8 10h7M8 13h7M8 16h4" stroke="#0a0a0b" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M5 4h11l3 3v13H5V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        <path d="M8 10h7M8 13h7M8 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
       </svg>
     </div>
     <span class="brand-name">EOD Report</span>
@@ -322,5 +327,6 @@ document.addEventListener('keydown', (e) => {
 render();
 </script>
 <script src="theme.js"></script>
+<script src="register-sw.js"></script>
 </body>
 </html>

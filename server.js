@@ -2,14 +2,117 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+app.set('trust proxy', 1);
 
 app.use(cors());
 app.use(express.json());
+
+/* ---- PIN gate ----
+ * Everything except the PIN page itself (and the handful of static assets
+ * it needs) requires a valid session cookie, issued by POST /api/pin after
+ * checking the PIN against SITE_PIN. Sessions live in memory, so a server
+ * restart signs everyone back out. */
+
+const SESSION_COOKIE = 'eod_session';
+const SESSION_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+const activeSessions = new Map(); // token -> expiry timestamp
+
+const PUBLIC_PATHS = new Set([
+  '/pin.html',
+  '/api/pin',
+  '/style.css',
+  '/theme.js',
+  '/favicon.svg',
+  '/favicon-32.png',
+  '/favicon-192.png',
+  '/apple-touch-icon.png',
+]);
+
+function getCookie(req, name) {
+  const header = req.headers.cookie;
+  if (!header) return null;
+  for (const part of header.split(';')) {
+    const [key, ...rest] = part.trim().split('=');
+    if (key === name) return decodeURIComponent(rest.join('='));
+  }
+  return null;
+}
+
+function setSessionCookie(res, token) {
+  const parts = [
+    `${SESSION_COOKIE}=${encodeURIComponent(token)}`,
+    'Path=/',
+    `Max-Age=${Math.floor(SESSION_MAX_AGE_MS / 1000)}`,
+    'HttpOnly',
+    'SameSite=Lax',
+  ];
+  if (process.env.NODE_ENV === 'production') parts.push('Secure');
+  res.setHeader('Set-Cookie', parts.join('; '));
+}
+
+function hasValidSession(req) {
+  const token = getCookie(req, SESSION_COOKIE);
+  if (!token) return false;
+  const expiry = activeSessions.get(token);
+  if (!expiry || expiry < Date.now()) {
+    activeSessions.delete(token);
+    return false;
+  }
+  return true;
+}
+
+app.post('/api/pin', (req, res) => {
+  const SITE_PIN = process.env.SITE_PIN;
+  if (!SITE_PIN) {
+    return res.status(500).json({ error: 'Server is missing SITE_PIN. Add it to the .env file.' });
+  }
+
+  const { pin } = req.body || {};
+  if (!pin || pin !== SITE_PIN) {
+    return res.status(401).json({ error: 'Incorrect PIN. Please try again.' });
+  }
+
+  const token = crypto.randomBytes(24).toString('hex');
+  activeSessions.set(token, Date.now() + SESSION_MAX_AGE_MS);
+  setSessionCookie(res, token);
+  res.json({ ok: true });
+});
+
+app.use((req, res, next) => {
+  if (PUBLIC_PATHS.has(req.path)) return next();
+  if (hasValidSession(req)) return next();
+
+  if (req.path.startsWith('/api/')) {
+    return res.status(401).json({ error: 'PIN required.' });
+  }
+
+  res.redirect(`/pin.html?next=${encodeURIComponent(req.originalUrl)}`);
+});
+
 app.use(express.static(path.join(__dirname, 'public')));
+
+/* ---- Rate limiting ----
+ * 10 report generations per hour per authenticated session. */
+
+const RATE_LIMIT_MAX = 10;
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const generationLog = new Map(); // session token -> timestamps[]
+
+function isRateLimited(token) {
+  const now = Date.now();
+  const timestamps = (generationLog.get(token) || []).filter((t) => now - t < RATE_LIMIT_WINDOW_MS);
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    generationLog.set(token, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  generationLog.set(token, timestamps);
+  return false;
+}
 
 const SHORT_SYSTEM_PROMPT = `You write short, simple end-of-day store reports for a group chat.
 
@@ -73,8 +176,14 @@ function pickVoiceStyle() {
 
 app.post('/api/generate', async (req, res) => {
   try {
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
     if (!OPENAI_API_KEY) {
       return res.status(500).json({ error: 'Server is missing OPENAI_API_KEY. Add it to the .env file.' });
+    }
+
+    const sessionToken = getCookie(req, SESSION_COOKIE) || req.ip;
+    if (isRateLimited(sessionToken)) {
+      return res.status(429).json({ error: 'Rate limit reached: only 10 reports per hour are allowed. Please try again later.' });
     }
 
     const { store, issues, equipment, conditions, clockOut, note, length } = req.body || {};
@@ -127,6 +236,10 @@ Write the end-of-day report now, following the rules exactly.`;
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`EOD report app running at http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`EOD report app running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
