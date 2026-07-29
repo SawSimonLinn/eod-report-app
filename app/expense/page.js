@@ -60,24 +60,109 @@ export default function ExpensePage() {
     setReceiptImages((images) => images.map((img, idx) => (idx === i ? value : img)));
   }
 
-  function handleReceiptImageChange(i, file) {
+  function isHeicFile(file) {
+    const type = (file.type || '').toLowerCase();
+    const name = (file.name || '').toLowerCase();
+    return type === 'image/heic' || type === 'image/heif' || name.endsWith('.heic') || name.endsWith('.heif');
+  }
+
+  function readAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error('read-failed'));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function convertHeicViaCanvas(file) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = img.naturalWidth;
+          canvas.height = img.naturalHeight;
+          if (!canvas.width || !canvas.height) throw new Error('empty-image');
+          canvas.getContext('2d').drawImage(img, 0, 0);
+          canvas.toBlob(
+            (blob) => (blob ? resolve(blob) : reject(new Error('canvas-empty'))),
+            'image/jpeg',
+            0.85
+          );
+        } catch (err) {
+          reject(err);
+        } finally {
+          URL.revokeObjectURL(url);
+        }
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('img-load-failed'));
+      };
+      img.src = url;
+    });
+  }
+
+  async function convertHeicOnServer(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch('/api/convert-heic', { method: 'POST', body: formData });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok || !data.dataUrl) {
+      throw new Error(data.error || 'server-conversion-failed');
+    }
+    return data.dataUrl;
+  }
+
+  async function handleReceiptImageChange(i, file) {
     setError('');
     if (!file) {
       updateReceiptImage(i, null);
       return;
     }
-    if (!file.type.startsWith('image/')) {
+    if (!file.type.startsWith('image/') && !isHeicFile(file)) {
       setError('Please upload an image file for the receipt.');
       return;
     }
+
+    if (isHeicFile(file)) {
+      // Safari/iOS decode HEIC natively via <img>/canvas, which is far more reliable
+      // than any in-browser wasm library; fall back to server-side conversion
+      // (Node, no worker/sandbox quirks) when native decoding isn't supported,
+      // e.g. desktop Chrome/Firefox.
+      try {
+        const converted = await convertHeicViaCanvas(file);
+        if (converted.size > MAX_IMAGE_BYTES) {
+          setError('Receipt image is too large. Please upload an image under 8MB.');
+          return;
+        }
+        const dataUrl = await readAsDataUrl(converted);
+        updateReceiptImage(i, dataUrl);
+      } catch {
+        try {
+          const dataUrl = await convertHeicOnServer(file);
+          updateReceiptImage(i, dataUrl);
+        } catch (err) {
+          console.error('HEIC conversion failed:', err);
+          setError('Could not convert that HEIC photo. Please try a JPG/PNG instead.');
+        }
+      }
+      return;
+    }
+
     if (file.size > MAX_IMAGE_BYTES) {
       setError('Receipt image is too large. Please upload an image under 8MB.');
       return;
     }
-    const reader = new FileReader();
-    reader.onload = () => updateReceiptImage(i, reader.result);
-    reader.onerror = () => setError('Could not read that image. Please try another file.');
-    reader.readAsDataURL(file);
+
+    try {
+      const dataUrl = await readAsDataUrl(file);
+      updateReceiptImage(i, dataUrl);
+    } catch {
+      setError('Could not read that image. Please try another file.');
+    }
   }
 
   async function handleGenerateClick() {
@@ -185,7 +270,7 @@ export default function ExpensePage() {
                     <input
                       id={`receipt-photo-${i}`}
                       type="file"
-                      accept="image/*"
+                      accept="image/*,.heic,.heif"
                       className="file-upload-input"
                       onChange={(e) => handleReceiptImageChange(i, e.target.files?.[0] || null)}
                     />

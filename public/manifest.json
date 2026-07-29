@@ -1,6 +1,6 @@
 {
-  "name": "End of Day Report",
-  "short_name": "EOD Report",
+  "name": "Wraply.lol",
+  "short_name": "Wraply.lol",
   "description": "Generate clean, consistent end-of-day store reports in seconds.",
   "start_url": "/",
   "scope": "/",

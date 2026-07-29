@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Gas Expense Report · End of Day Report',
+  title: 'Gas Expense Report · Wraply.lol',
   description: 'Generate a company gas expense reimbursement report with per-receipt details, ready to copy.',
 };
 

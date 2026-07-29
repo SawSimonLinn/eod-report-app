@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'History · End of Day Report',
+  title: 'History · Wraply.lol',
   description: 'Recent end-of-day reports generated on this device.',
 };
 

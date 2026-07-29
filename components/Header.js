@@ -51,7 +51,7 @@ export default function Header() {
       <header className="site-header">
         <Link className="brand" href="/">
           <BrandMark />
-          <span className="brand-name">EOD Report</span>
+          <span className="brand-name">Wraply.lol</span>
         </Link>
 
         <nav className="nav-desktop">

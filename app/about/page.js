@@ -1,8 +1,8 @@
 import AppShell from '../../components/AppShell';
 
 export const metadata = {
-  title: 'About · End of Day Report',
-  description: 'About the creator of the End of Day Report tool.',
+  title: 'About · Wraply.lol',
+  description: 'About the creator of the Wraply.lol tool.',
 };
 
 export default function AboutPage() {
@@ -19,7 +19,7 @@ export default function AboutPage() {
       <div className="card">
         <p className="section-title">What This Is</p>
         <p style={{ fontSize: 14.5, lineHeight: 1.65, color: 'var(--ink)', margin: '0 0 10px' }}>
-          End of Day Report turns a few rough notes into a clean, consistent report that&apos;s ready to paste into
+          Wraply.lol turns a few rough notes into a clean, consistent report that&apos;s ready to paste into
           the store group chat — built for teams running 10+ locations who were typing the same update by hand
           every night.
         </p>

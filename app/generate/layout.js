@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Generate · End of Day Report',
+  title: 'Generate · Wraply.lol',
   description: 'Generate a clean, consistent end-of-day store report in seconds.',
 };
 

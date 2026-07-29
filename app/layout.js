@@ -8,13 +8,13 @@ import RouteProgress from '../components/RouteProgress';
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
 export const metadata = {
-  title: 'End of Day Report',
+  title: 'Wraply.lol',
   description: 'Generate clean, consistent end-of-day store reports in seconds.',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'EOD Report',
+    title: 'Wraply.lol',
   },
   icons: {
     icon: [

@@ -139,7 +139,7 @@ export default function GeneratePage() {
         <div className="eyebrow">
           <span className="pulse"></span>Store Ops Tool
         </div>
-        <h1>End of Day Report</h1>
+        <h1>Wraply.lol</h1>
         <p className="sub">Type a quick update for each part. Leave anything blank if there is nothing to say.</p>
         <div className="length-toggle">
           <button type="button" className={length === 'short' ? 'active' : ''} onClick={() => setLengthAndPersist('short')}>

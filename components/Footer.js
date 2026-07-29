@@ -19,7 +19,7 @@ export default function Footer() {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="f-brand">
-          <strong>EOD Report</strong> · internal store ops tool
+          <strong>Wraply.lol</strong> · internal store ops tool
         </div>
         <div className="f-links">
           {links.map((link) => (
