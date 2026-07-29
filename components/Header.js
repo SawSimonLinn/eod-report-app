@@ -9,7 +9,7 @@ import { MenuIcon, CloseIcon } from './icons';
 import { loadHistory } from '../lib/history';
 
 const NAV_LINKS = [
-  { href: '/', label: 'Generate' },
+  { href: '/generate', label: 'Report' },
   { href: '/expense', label: 'Expense' },
   { href: '/history', label: 'History', badge: true },
   { href: '/about', label: 'About' },

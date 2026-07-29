@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react';
 import AppShell from '../../components/AppShell';
 import { CopyIcon, RegenerateIcon } from '../../components/icons';
+import { addToHistory } from '../../lib/history';
 
 const RECEIPT_MIN = 1;
 const RECEIPT_MAX = 20;
@@ -18,6 +19,11 @@ function formatMainReport(report) {
 
 function formatReceipt(receipt) {
   return `Receipt Title: ${receipt.receiptTitle}\nExpense Title: ${receipt.expenseTitle}\nNote: ${receipt.note}`;
+}
+
+function formatFullExpenseReport(data) {
+  const receiptBlocks = data.receipts.map((receipt, i) => `Receipt ${i + 1}\n${formatReceipt(receipt)}`);
+  return [formatMainReport(data.report), ...receiptBlocks].join('\n\n');
 }
 
 function CopyButton({ text, className }) {
@@ -38,6 +44,44 @@ function CopyButton({ text, className }) {
       <CopyIcon />
       {copied ? 'Copied!' : 'Copy'}
     </button>
+  );
+}
+
+function CopyIconButton({ text, label }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1200);
+    } catch (err) {
+      // ignore
+    }
+  }
+
+  return (
+    <button
+      className={`copy-icon-btn${copied ? ' copied' : ''}`}
+      onClick={handleCopy}
+      type="button"
+      title={`Copy ${label}`}
+      aria-label={copied ? `${label} copied` : `Copy ${label}`}
+    >
+      <CopyIcon />
+    </button>
+  );
+}
+
+function ReportField({ label, value }) {
+  return (
+    <div className="report-field">
+      <div className="rf-head">
+        <span className="rf-label">{label}</span>
+        <CopyIconButton text={value} label={label} />
+      </div>
+      <div className="rf-value">{value}</div>
+    </div>
   );
 }
 
@@ -84,6 +128,12 @@ export default function ExpensePage() {
 
       lastPayloadRef.current = payload;
       setResult(data);
+      addToHistory({
+        type: 'expense',
+        title: data.report.title,
+        payload,
+        report: formatFullExpenseReport(data),
+      });
     } catch (err) {
       setError('Could not reach the server. Please try again.');
     } finally {
@@ -203,7 +253,11 @@ export default function ExpensePage() {
               <span className="dot"></span>Expense Report
             </div>
           </div>
-          <div className="report-text">{formatMainReport(result.report)}</div>
+          <div className="report-fields">
+            <ReportField label="Title" value={result.report.title} />
+            <ReportField label="Business Purpose" value={result.report.businessPurpose} />
+            <ReportField label="Comment" value={result.report.comment} />
+          </div>
           <div className="actions">
             <button className="btn-regenerate" onClick={handleRegenerate} disabled={busy}>
               <RegenerateIcon />
@@ -226,7 +280,11 @@ export default function ExpensePage() {
                 <span className="dot"></span>Receipt {i + 1}
               </div>
             </div>
-            <div className="report-text">{formatReceipt(receipt)}</div>
+            <div className="report-fields">
+              <ReportField label="Receipt Title" value={receipt.receiptTitle} />
+              <ReportField label="Expense Title" value={receipt.expenseTitle} />
+              <ReportField label="Note" value={receipt.note} />
+            </div>
             <div className="actions">
               <CopyButton text={formatReceipt(receipt)} className="btn-copy" />
             </div>

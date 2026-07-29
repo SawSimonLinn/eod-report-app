@@ -1,8 +1,11 @@
 import { Suspense } from 'react';
+import { Inter } from 'next/font/google';
 import Script from 'next/script';
 import './globals.css';
 import ServiceWorkerRegister from '../components/ServiceWorkerRegister';
 import RouteProgress from '../components/RouteProgress';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
 
 export const metadata = {
   title: 'End of Day Report',
@@ -23,12 +26,12 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: '#faf8f5',
+  themeColor: '#ffffff',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth">
+    <html lang="en" suppressHydrationWarning data-scroll-behavior="smooth" className={inter.variable}>
       <body>
         <Script id="theme-init" strategy="beforeInteractive">
           {"document.documentElement.setAttribute('data-theme', localStorage.getItem('eodTheme') || 'light');"}

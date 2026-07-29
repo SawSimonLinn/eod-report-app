@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
 const FOOTER_LINKS = [
-  { href: '/', label: 'Generate' },
+  { href: '/', label: 'Home' },
+  { href: '/generate', label: 'Report' },
   { href: '/expense', label: 'Expense' },
   { href: '/history', label: 'History' },
   { href: '/about', label: 'About' },

@@ -5,6 +5,22 @@ import AppShell from '../../components/AppShell';
 import { CopyIcon, DeleteIcon, CloseIcon } from '../../components/icons';
 import { loadHistory, saveHistory } from '../../lib/history';
 
+const CATEGORIES = [
+  { key: 'all', label: 'All' },
+  { key: 'eod', label: 'Reports' },
+  { key: 'expense', label: 'Expenses' },
+];
+
+function itemTitle(item) {
+  if (item.title) return item.title;
+  if (item.payload?.store) return item.payload.store;
+  return item.type === 'expense' ? 'Expense Report' : 'Report';
+}
+
+function itemBadgeLabel(item) {
+  return item.type === 'expense' ? 'Expense' : item.length === 'long' ? 'Long' : 'Short';
+}
+
 function formatWhen(ts) {
   const d = new Date(ts);
   const time = d.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' });
@@ -36,10 +52,13 @@ function ItemCopyButton({ text }) {
 
 export default function HistoryPage() {
   const [items, setItems] = useState([]);
+  const [filter, setFilter] = useState('all');
   const [error, setError] = useState('');
   const [activeItem, setActiveItem] = useState(null);
   const [modalCopied, setModalCopied] = useState(false);
   const [confirm, setConfirm] = useState(null); // { message, onConfirm }
+
+  const filteredItems = filter === 'all' ? items : items.filter((item) => (item.type || 'eod') === filter);
 
   useEffect(() => {
     setItems(loadHistory());
@@ -100,9 +119,24 @@ export default function HistoryPage() {
         </div>
       )}
 
+      <div className="length-toggle category-toggle">
+        {CATEGORIES.map((cat) => (
+          <button
+            key={cat.key}
+            type="button"
+            className={filter === cat.key ? 'active' : ''}
+            onClick={() => setFilter(cat.key)}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
       <div className="history-head">
         <div className="title">
-          <span className="dot"></span>All Reports <span className="count">{items.length > 0 ? `(${items.length})` : ''}</span>
+          <span className="dot"></span>
+          {CATEGORIES.find((c) => c.key === filter).label}{' '}
+          <span className="count">{filteredItems.length > 0 ? `(${filteredItems.length})` : ''}</span>
         </div>
         <button
           id="clearHistoryBtn"
@@ -115,13 +149,13 @@ export default function HistoryPage() {
         </button>
       </div>
 
-      {items.length === 0 ? (
+      {filteredItems.length === 0 ? (
         <div id="historyEmpty">
-          No reports yet. <a href="/">Generate one</a> and it&apos;ll show up here.
+          No reports yet. <a href="/generate">Generate one</a> and it&apos;ll show up here.
         </div>
       ) : (
         <div className="history-list">
-          {items.map((item) => (
+          {filteredItems.map((item) => (
             <div
               className="history-item"
               key={item.id}
@@ -132,8 +166,8 @@ export default function HistoryPage() {
             >
               <div className="h-info">
                 <div className="h-top">
-                  <span className="h-store">{item.payload?.store || 'No store selected'}</span>
-                  <span className="h-length">{item.length === 'long' ? 'Long' : 'Short'}</span>
+                  <span className="h-store">{itemTitle(item)}</span>
+                  <span className={`h-length h-cat-${item.type || 'eod'}`}>{itemBadgeLabel(item)}</span>
                   <span className="h-time">{formatWhen(item.timestamp)}</span>
                 </div>
                 <div className="h-preview">{item.report.replace(/\s+/g, ' ')}</div>
@@ -162,7 +196,7 @@ export default function HistoryPage() {
             <div className="modal-head">
               <div className="title">
                 <span className="dot"></span>
-                {activeItem.payload?.store || 'Report'}
+                {itemTitle(activeItem)}
               </div>
               <button className="modal-close" aria-label="Close" onClick={() => setActiveItem(null)}>
                 <CloseIcon />
