@@ -42,6 +42,52 @@ const STEPS = [
   },
 ];
 
+const STATS = [
+  { value: '<30s', label: 'To generate a full report' },
+  { value: '10+', label: 'Locations one team can run' },
+  { value: '2', label: 'Report lengths — short or long' },
+  { value: '0', label: 'Reports sent to a server' },
+];
+
+const USE_CASES = [
+  {
+    tag: 'Store Manager',
+    title: 'Skip the nightly retype',
+    description: 'Jot down what happened on shift and get a report ready for the group chat before you clock out.',
+  },
+  {
+    tag: 'District Manager',
+    title: 'Consistent updates, every store',
+    description: 'Every location reports in the same format, so scanning ten updates takes as long as scanning one.',
+  },
+  {
+    tag: 'New Hire',
+    title: 'Never guess what to include',
+    description: 'The prompts walk you through what to cover, so first-week reports read like a veteran wrote them.',
+  },
+];
+
+const FAQS = [
+  {
+    question: 'Is my data stored anywhere?',
+    answer:
+      'Recent reports are saved locally in your browser so you can find and copy them again later. Nothing is sent to or stored on a server.',
+  },
+  {
+    question: 'Does it work for expense reports too?',
+    answer:
+      'Yes — describe a trip and add receipts, and it generates a clean gas expense report the same way it generates EOD reports.',
+  },
+  {
+    question: 'Can I edit the report after it generates?',
+    answer: 'Yes, the output is plain text in a normal field — copy it as-is or tweak anything before pasting it in.',
+  },
+  {
+    question: 'Is this free to use?',
+    answer: 'Yes, it’s free. Just type your notes and generate as many reports as you need.',
+  },
+];
+
 export default function HomePage() {
   return (
     <AppShell wide>
@@ -59,6 +105,15 @@ export default function HomePage() {
         ))}
       </div>
 
+      <div className="stats-band">
+        {STATS.map(({ value, label }, i) => (
+          <ScrollReveal as="div" className="stat-card" delay={i * 50} key={label}>
+            <div className="stat-value">{value}</div>
+            <div className="stat-label">{label}</div>
+          </ScrollReveal>
+        ))}
+      </div>
+
       <ScrollReveal as="h2" className="section-heading">
         How it works
       </ScrollReveal>
@@ -68,6 +123,34 @@ export default function HomePage() {
             <div className="step-number">{i + 1}</div>
             <h3>{title}</h3>
             <p>{description}</p>
+          </ScrollReveal>
+        ))}
+      </div>
+
+      <ScrollReveal as="h2" className="section-heading">
+        Built for every role on the floor
+      </ScrollReveal>
+      <div className="usecase-grid">
+        {USE_CASES.map(({ tag, title, description }, i) => (
+          <ScrollReveal as="div" className="usecase-card" delay={i * 70} key={title}>
+            <span className="uc-tag">{tag}</span>
+            <h3>{title}</h3>
+            <p>{description}</p>
+          </ScrollReveal>
+        ))}
+      </div>
+
+      <ScrollReveal as="h2" className="section-heading">
+        Questions people ask
+      </ScrollReveal>
+      <div className="faq-list">
+        {FAQS.map(({ question, answer }, i) => (
+          <ScrollReveal as="details" className="faq-item" delay={i * 50} key={question}>
+            <summary>
+              {question}
+              <span className="faq-plus" aria-hidden="true"></span>
+            </summary>
+            <p>{answer}</p>
           </ScrollReveal>
         ))}
       </div>

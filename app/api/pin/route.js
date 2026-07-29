@@ -15,12 +15,13 @@ export async function POST(request) {
 
   const token = await createSessionToken();
   const res = NextResponse.json({ ok: true });
+  const isHttps = request.headers.get('x-forwarded-proto') === 'https' || request.nextUrl.protocol === 'https:';
   res.cookies.set(SESSION_COOKIE, token, {
     path: '/',
     maxAge: Math.floor(SESSION_MAX_AGE_MS / 1000),
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: isHttps,
   });
   return res;
 }

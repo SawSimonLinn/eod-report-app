@@ -320,6 +320,15 @@ main.wrap {
   flex: 1;
 }
 main.wrap.wide { max-width: 760px; }
+@media (min-width: 900px) {
+  main.wrap.wide { max-width: 1160px; padding-left: 40px; padding-right: 40px; }
+}
+@media (min-width: 1280px) {
+  main.wrap.wide { max-width: 1320px; padding-left: 56px; padding-right: 56px; }
+}
+@media (min-width: 1600px) {
+  main.wrap.wide { max-width: 1520px; }
+}
 
 .hero {
   margin-bottom: 22px;
@@ -500,6 +509,9 @@ p.sub {
   line-height: 1.55;
   margin: 0;
 }
+@media (min-width: 900px) {
+  .feature-grid { grid-template-columns: repeat(4, 1fr); }
+}
 @media (max-width: 640px) {
   .feature-grid { grid-template-columns: 1fr; }
 }
@@ -552,6 +564,119 @@ p.sub {
 .cta-band h2 { font-size: 20px; margin: 0 0 6px; color: var(--silver-1); }
 .cta-band p { margin: 0; color: var(--muted); font-size: 14px; }
 .cta-band .btn-lg { flex-shrink: 0; }
+
+/* Stats band */
+.stats-band {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin: 0 0 40px;
+}
+.stat-card {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 22px 18px;
+  text-align: center;
+}
+.stat-card .stat-value {
+  font-size: clamp(22px, 3vw, 30px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--silver-1);
+  margin-bottom: 4px;
+}
+.stat-card .stat-label {
+  font-size: 12.5px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+@media (max-width: 640px) {
+  .stats-band { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Use cases */
+.usecase-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 40px;
+}
+.usecase-card {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 24px;
+}
+.usecase-card .uc-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.usecase-card h3 { font-size: 16px; font-weight: 700; margin: 0 0 8px; color: var(--silver-1); }
+.usecase-card p { font-size: 13.5px; color: var(--muted); line-height: 1.6; margin: 0; }
+@media (max-width: 860px) {
+  .usecase-grid { grid-template-columns: 1fr; }
+}
+
+/* FAQ */
+.faq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 40px;
+  max-width: 780px;
+}
+.faq-item {
+  background: var(--card-surface);
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  padding: 4px 20px;
+}
+.faq-item summary {
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 0;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--silver-1);
+}
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary .faq-plus {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--field-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.faq-item summary .faq-plus::before,
+.faq-item summary .faq-plus::after {
+  content: '';
+  position: absolute;
+  background: var(--silver-1);
+  transition: transform 0.15s ease;
+}
+.faq-item summary .faq-plus::before { width: 10px; height: 1.6px; }
+.faq-item summary .faq-plus::after { width: 1.6px; height: 10px; }
+.faq-item[open] summary .faq-plus::after { transform: scaleY(0); }
+.faq-item p {
+  margin: 0 0 18px;
+  font-size: 13.5px;
+  color: var(--muted);
+  line-height: 1.6;
+}
 
 .card {
   background: var(--card-surface);
