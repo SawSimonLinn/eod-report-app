@@ -1,19 +1,17 @@
 {
   "name": "eod-report-app",
-  "version": "1.0.0",
-  "description": "End of day store report generator using OpenAI API",
-  "main": "server.js",
-  "type": "commonjs",
+  "version": "2.0.0",
+  "description": "End of day store report and gas expense report generator using OpenAI API, built with Next.js",
+  "private": true,
   "scripts": {
-    "start": "node server.js",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "node --test"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
-  },
-  "devDependencies": {
-    "supertest": "^7.2.2"
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }
