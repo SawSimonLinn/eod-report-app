@@ -868,6 +868,37 @@ select#store:focus {
 }
 .optional-section { margin-top: 4px; }
 
+.receipt-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.receipt-preview img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--card-border);
+}
+
+.file-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+.file-upload-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 button#generateBtn {
   width: 100%;
   margin-top: 22px;

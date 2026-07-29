@@ -21,8 +21,22 @@ export async function POST(request) {
     }
 
     const body = await request.json().catch(() => ({}));
-    const { prompt, receiptCount, receiptPrompts } = body || {};
-    const userContent = buildExpenseUserContent({ prompt, receiptCount, receiptPrompts });
+    const { prompt, receiptCount, receiptPrompts, receiptImages } = body || {};
+
+    if (Array.isArray(receiptImages)) {
+      const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+      for (const img of receiptImages) {
+        if (img == null) continue;
+        if (typeof img !== 'string' || !/^data:image\/[a-zA-Z0-9.+-]+;base64,/.test(img)) {
+          return NextResponse.json({ error: 'One of the receipt images is invalid.' }, { status: 400 });
+        }
+        if (img.length > MAX_IMAGE_BYTES * 1.4) {
+          return NextResponse.json({ error: 'A receipt image is too large. Please upload a smaller image (under 8MB).' }, { status: 400 });
+        }
+      }
+    }
+
+    const userContent = buildExpenseUserContent({ prompt, receiptCount, receiptPrompts, receiptImages });
 
     const { ok, status, data } = await callOpenAIChat({
       apiKey: OPENAI_API_KEY,

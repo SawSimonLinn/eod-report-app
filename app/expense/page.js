@@ -85,10 +85,13 @@ function ReportField({ label, value }) {
   );
 }
 
+const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+
 export default function ExpensePage() {
   const [prompt, setPrompt] = useState('');
   const [receiptCount, setReceiptCount] = useState(1);
   const [receiptNotes, setReceiptNotes] = useState(['']);
+  const [receiptImages, setReceiptImages] = useState([null]);
   const [notesExpanded, setNotesExpanded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -103,10 +106,39 @@ export default function ExpensePage() {
       while (next.length < n) next.push('');
       return next;
     });
+    setReceiptImages((images) => {
+      const next = images.slice(0, n);
+      while (next.length < n) next.push(null);
+      return next;
+    });
   }
 
   function updateReceiptNote(i, value) {
     setReceiptNotes((notes) => notes.map((n, idx) => (idx === i ? value : n)));
+  }
+
+  function updateReceiptImage(i, value) {
+    setReceiptImages((images) => images.map((img, idx) => (idx === i ? value : img)));
+  }
+
+  function handleReceiptImageChange(i, file) {
+    setError('');
+    if (!file) {
+      updateReceiptImage(i, null);
+      return;
+    }
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file for the receipt.');
+      return;
+    }
+    if (file.size > MAX_IMAGE_BYTES) {
+      setError('Receipt image is too large. Please upload an image under 8MB.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => updateReceiptImage(i, reader.result);
+    reader.onerror = () => setError('Could not read that image. Please try another file.');
+    reader.readAsDataURL(file);
   }
 
   async function generate(payload) {
@@ -131,7 +163,7 @@ export default function ExpensePage() {
       addToHistory({
         type: 'expense',
         title: data.report.title,
-        payload,
+        payload: { ...payload, receiptImages: undefined },
         report: formatFullExpenseReport(data),
       });
     } catch (err) {
@@ -146,6 +178,7 @@ export default function ExpensePage() {
       prompt: prompt.trim(),
       receiptCount,
       receiptPrompts: receiptNotes.map((n) => n.trim()),
+      receiptImages,
     });
   }
 
@@ -217,12 +250,12 @@ export default function ExpensePage() {
 
         <div className="field">
           <label>
-            Per-Receipt Notes <span className="hint">optional</span>
+            Per-Receipt Details <span className="hint">optional</span>
           </label>
           {notesExpanded ? (
             <div className="optional-section">
               {receiptNotes.map((note, i) => (
-                <div key={i} style={{ marginTop: i === 0 ? 0 : 10 }}>
+                <div key={i} style={{ marginTop: i === 0 ? 0 : 16 }}>
                   <label style={{ marginBottom: 5, fontSize: 12.5 }}>Receipt {i + 1}</label>
                   <textarea
                     placeholder="e.g. Shell on Main St, filled up before store visit"
@@ -230,12 +263,36 @@ export default function ExpensePage() {
                     value={note}
                     onChange={(e) => updateReceiptNote(i, e.target.value)}
                   />
+                  <div style={{ marginTop: 8 }}>
+                    <label style={{ marginBottom: 5, fontSize: 12.5 }}>
+                      Upload Receipt Photo <span className="hint">optional — we&apos;ll pull the amount &amp; date from it</span>
+                    </label>
+                    {receiptImages[i] ? (
+                      <div className="receipt-preview">
+                        <img src={receiptImages[i]} alt={`Receipt ${i + 1} preview`} />
+                        <button type="button" className="optional-toggle" onClick={() => handleReceiptImageChange(i, null)}>
+                          Remove photo
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="file-upload optional-toggle" htmlFor={`receipt-photo-${i}`}>
+                        + Upload photo
+                        <input
+                          id={`receipt-photo-${i}`}
+                          type="file"
+                          accept="image/*"
+                          className="file-upload-input"
+                          onChange={(e) => handleReceiptImageChange(i, e.target.files?.[0] || null)}
+                        />
+                      </label>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
             <button type="button" className="optional-toggle" onClick={() => setNotesExpanded(true)}>
-              + Add a note for each receipt
+              + Add a note or receipt photo
             </button>
           )}
         </div>
